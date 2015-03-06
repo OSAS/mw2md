@@ -120,7 +120,7 @@ mw.css('page').each do |page|
       end
 
       begin
-        `cd #{path} && git add * && git commit -a --author="#{username.downcase} <#{username.downcase}@wiki.ovirt.org>" --date="#{timestamp}" -m "#{comment.strip.empty? "Updated" || comment.gsub(/"/, "'")}" && cd -`
+        `cd #{path} && git add * && git commit -a --author="#{username.downcase} <#{username.downcase}@wiki.ovirt.org>" --date="#{timestamp}" -m "#{comment.strip.empty? ? "Updated" : comment.gsub(/"/, "'")}" && cd -`
       rescue
         puts "Error committing!"
       end
