@@ -23,7 +23,7 @@ mw.css('page').each do |page|
 
   next if title.match(/^File:/)
 
-  authors = page.css('username').map {|u| u.text}
+  authors = page.css('username').map {|u| u.text.downcase}.sort.uniq
 
   page.css('revision').reverse.take(1).each do |rev|
     wikitext = rev.css('text').text
