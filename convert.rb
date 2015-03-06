@@ -6,7 +6,7 @@ require 'pandoc-ruby'
 require 'kramdown'
 require 'yaml'
 
-path = "output"
+path = "/tmp/output"
 FileUtils.mkdir_p path
 
 mw_xml = open "dump.xml"
