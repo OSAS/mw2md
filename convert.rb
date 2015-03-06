@@ -8,6 +8,7 @@ require 'yaml'
 
 path = "/tmp/output"
 FileUtils.mkdir_p path
+`cd #{path} && git init && cd -`
 
 mw_xml = open "dump.xml"
 mw = Nokogiri::XML(mw_xml)
@@ -25,13 +26,13 @@ mw.css('page').each do |page|
 
   authors = page.css('username').map {|u| u.text.downcase}.sort.uniq
 
-  page.css('revision').reverse.take(1).each do |rev|
+  page.css('revision').each do |rev|
     wikitext = rev.css('text').text
 
     id = rev.css('id').text
     timestamp = rev.css('timestamp').text
     username = rev.css('username').text
-    comment = rev.css('comment').text
+    comment = rev.css('comment').text.gsub(/\/\*|\*\//, '').strip
     category = wikitext.match(/\[\[Category\:([^\]]*)\]\]/i)
     category = category[1] if category
     category_dirs = category.downcase.strip.split(/[|\/]/).first if category
@@ -55,18 +56,23 @@ mw.css('page').each do |page|
     #puts dir
 
     output = true
+    conversion = false
 
     if output == true
       begin
-        html = PandocRuby.convert(
-          wikitext, :s, {
-            from: :mediawiki,
-            #to:   :html
-            to:   :markdown_github
-          },
-          'atx-headers',
-          'normalize',
-        )
+        html = if conversion
+          PandocRuby.convert(
+            wikitext, :s, {
+              from: :mediawiki,
+              #to:   :html
+              to:   :markdown_github
+            },
+            'atx-headers',
+            'normalize',
+          )
+         else
+           wikitext
+         end
       rescue
         puts "Error in conversion. Skipping to next page."
         next
@@ -91,20 +97,32 @@ mw.css('page').each do |page|
         "authors"       => authors.join(', '),
         "wiki_category" => category,
         "wiki_title"    => title,
-        "wiki_id"       => id
+        #"wiki_id"       => id
       }.to_yaml
 
-      complete = "#{frontmatter}\n---\n#{output}"
+      complete = "#{frontmatter}---\n#{output}"
 
-      filename = filename.downcase.gsub(/[_\s:]/, '-').gsub(/-+/, '-')
-      ext = ".html.md"
+      filename = filename
+      ext = conversion ? ".html.md" : ".wiki"
 
-      puts "Writing (#{current_page}/#{number_of_pages}) #{dir}/#{filename}#{ext}..."
+      full_file = "#{dir}/#{filename}#{ext}"
+        .downcase
+        .gsub(/[_\s:]/, '-')
+        .gsub(/-+/, '-')
+        .gsub(/["']/, '')
+
+      puts "Writing (#{current_page}/#{number_of_pages}) (MWID: #{id}) #{full_file}..."
 
       begin
-        File.write "#{path}/#{dir}/#{filename}", complete
+        File.write "#{path}/#{full_file}", complete
       rescue
         puts "Error writing file!"
+      end
+
+      begin
+        `cd #{path} && git add * && git commit -a --author="#{username.downcase} <#{username.downcase}@wiki.ovirt.org>" --date="#{timestamp}" -m "#{comment.strip.empty? "Updated" || comment.gsub(/"/, "'")}" && cd -`
+      rescue
+        puts "Error committing!"
       end
     end
   end
