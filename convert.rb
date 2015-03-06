@@ -94,7 +94,7 @@ mw.css('page').each do |page|
         "wiki_id"       => id
       }.to_yaml
 
-      complete = "#{frontmatter}\n#{output}"
+      complete = "#{frontmatter}\n---\n#{output}"
 
       filename = filename.downcase.gsub(/[_\s:]/, '-').gsub(/-+/, '-')#.parameterize
 
