@@ -96,9 +96,10 @@ mw.css('page').each do |page|
 
       complete = "#{frontmatter}\n---\n#{output}"
 
-      filename = filename.downcase.gsub(/[_\s:]/, '-').gsub(/-+/, '-')#.parameterize
+      filename = filename.downcase.gsub(/[_\s:]/, '-').gsub(/-+/, '-')
+      ext = ".html.md"
 
-      puts "Writing (#{current_page}/#{number_of_pages}) #{dir}/#{filename}..."
+      puts "Writing (#{current_page}/#{number_of_pages}) #{dir}/#{filename}.#{ext}..."
 
       begin
         File.write "#{path}/#{dir}/#{filename}", complete
