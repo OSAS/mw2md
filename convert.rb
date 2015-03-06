@@ -66,24 +66,6 @@ mw.css('page').each do |page|
           },
           'atx-headers',
           'normalize',
-          ''
-          #'pipe_tables',
-          #'escaped_line_breaks',
-          #'blank_before_header',
-          #'header_attributes',
-          #'block_quotations',
-          #'blank_before_blockquote',
-          #'fenced_code_block',
-          #'definition_lists',
-          #'yaml_metadata-block',
-          #'inline_code_attributes',
-          #'raw_html',
-          #'markdown_in_html_blocks',
-          #'native_divs',
-          #'native_spans',
-          #'abbreviations',
-          #'autolink_bare_uris',
-          #'link_attributes',
         )
       rescue
         puts "Error in conversion. Skipping to next page."
@@ -95,11 +77,6 @@ mw.css('page').each do |page|
             .gsub(/ "wikilink"\)/, ')')
             .gsub(/^- /, '* ')
             .gsub(/^`(.*)`$/, '      \\1')
-      #body = Nokogiri::HTML(html).css('body').to_s
-
-      #puts Kramdown::Document.new(body, input: "html").to_kramdown
-
-      #puts output
 
       dir.gsub(/[_\s:]/, '-')
 
