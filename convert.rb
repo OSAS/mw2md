@@ -3,10 +3,17 @@
 require 'fileutils'
 require 'nokogiri'
 require 'pandoc-ruby'
+require 'wikicloth'
 require 'kramdown'
 require 'yaml'
 
-path = "/tmp/output"
+def html_clean html
+  html
+    .gsub(/ target="_blank"/, '')
+end
+
+
+path = "/tmp/mw2md-output"
 FileUtils.mkdir_p path
 `cd #{path} && git init && cd -`
 
@@ -56,11 +63,11 @@ mw.css('page').each do |page|
     #puts dir
 
     output = true
-    conversion = false
+    pandoc_conversion = true
 
     if output == true
       begin
-        html = if conversion
+        html = if pandoc_conversion
           PandocRuby.convert(
             wikitext, :s, {
               from: :mediawiki,
@@ -71,7 +78,16 @@ mw.css('page').each do |page|
             'normalize',
           )
          else
-           wikitext
+           #wikitext
+           wiki_html = WikiCloth::Parser.new({ data: wikitext }).to_html
+           #Kramdown::Document.new(html_clean wiki_html, input: "html").to_kramdown
+           PandocRuby.convert(
+             wiki_html, :s, {
+               from: :html,
+               to: :markdown_github
+             },
+             'atx-headers'
+           )
          end
       rescue
         puts "Error in conversion. Skipping to next page."
@@ -102,16 +118,19 @@ mw.css('page').each do |page|
 
       complete = "#{frontmatter}---\n#{output}"
 
-      filename = filename
-      ext = conversion ? ".html.md" : ".wiki"
+      ext = ".html.md"
 
-      full_file = "#{dir}/#{filename}#{ext}"
+      full_file = "#{dir.strip}/#{filename.strip}#{ext}"
         .downcase
+        .squeeze(' ')
         .gsub(/[_\s:]/, '-')
         .gsub(/-+/, '-')
         .gsub(/["']/, '')
+        .squeeze('-')
 
-      puts "Writing (#{current_page}/#{number_of_pages}) (MWID: #{id}) #{full_file}..."
+      percent = ((0.0 + current_page)/number_of_pages * 100).round(1)
+
+      puts "Writing (#{current_page}/#{number_of_pages}) #{percent}% (MWID: #{id}) #{full_file}..."
 
       begin
         File.write "#{path}/#{full_file}", complete
