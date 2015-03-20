@@ -100,7 +100,7 @@ mw.css('page').each do |page|
         'wiki_category' => category,
         'wiki_title'    => title,
         # "wiki_id"       => id
-      }.to_yaml
+      }.select { |_, val| !val.nil? }.to_yaml
 
       complete = "#{frontmatter}---\n#{output}"
 
