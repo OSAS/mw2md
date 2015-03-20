@@ -94,6 +94,7 @@ mw.css('page').each do |page|
       end
 
       frontmatter = {
+        'title'         => title.split(/[:\/]/).pop,
         'category'      => category_dirs,
         'authors'       => authors.join(', '),
         'wiki_category' => category,
