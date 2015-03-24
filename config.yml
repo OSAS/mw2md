@@ -25,3 +25,6 @@ rewrite_full:
   "^vdsm-hooks/": "vdsm/hook/"
   "^vdsm/vdsm-": "vdsm/"
   "^category/(.*).html.md": '\1/index.html.md'
+  "project-proposal/": "project/proposal/"
+  "/project-proposal-": "/"
+  "^draft-documentation/": "documentation/draft/"
