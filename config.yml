@@ -1,9 +1,26 @@
 catmatch:
   "how[ -]?to": howto
+  "workshop": workshop
+  "infra": infra
+  "node": node
+  "api": api
+  "event": event
+  "workshop": event/workshop
 
-rewrite:
+rewrite_file:
   "how[ -]?to[ -]?": ""
 
-rewrite_dirs:
+rewrite_dir:
   "features": "feature"
   "home/feature": "feature"
+  "infra.*": "infra"
+
+rewrite_full:
+  ".*/ovirt-([0-9.zx]*)-release-notes": 'release/\1/index'
+  ".*/ovirt-([0-9.zx]*)-(.*)": 'release/\1/\2'
+  "ovirt-.*-to-([^-]*)-upgrade": 'release/\1/upgrade'
+  "^node/node-": "node/"
+  "ovirt-": ""
+  "testcase/testcase": "testing/testcase/"
+  "^vdsm-hooks/": "vdsm/hook/"
+  "^vdsm/vdsm-": "vdsm/"
