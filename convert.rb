@@ -135,6 +135,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
       },
       'atx-headers')
            .gsub(/__TOC__/, "* ToC\n{:toc}\n\n")
+           .gsub(/__NOTOC__/, '{:.no_toc}')
            .gsub(/^#/, '##')
   rescue
     puts 'Error in conversion. Skipping to next page.'
