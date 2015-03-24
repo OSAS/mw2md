@@ -24,6 +24,8 @@ path = '/tmp/mw2md-output'
 authors_csv = 'authors.csv'
 dump_xml = 'dump.xml'
 
+puts "Prossing #{dump_xml}. Output directory: #{path}"
+
 # Create git repo
 FileUtils.mkdir_p path
 `git init #{path}`
