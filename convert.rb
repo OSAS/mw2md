@@ -59,7 +59,7 @@ end
 revision = []
 
 mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
-  title = page.css('title').text
+  title = page.css('title').text.strip
 
   next if title.match(/^File:/)
 
