@@ -148,8 +148,10 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
            .gsub(/^- /, '* ')
            .gsub(/^`(.*)`$/, '      \\1')
 
+  title_pretty = title.split(/[:\/]/).pop
+
   frontmatter = {
-    'title'         => title.split(/[:\/]/).pop,
+    'title'         => title_pretty,
     'category'      => category_match || category_dirs,
     'authors'       => authors.join(', '),
     'wiki_category' => category,
@@ -157,7 +159,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     # "wiki_id"       => id
   }.select { |_, val| !val.nil? }.to_yaml
 
-  complete = "#{frontmatter}---\n\n# #{title.split(/[:\/]/).pop}\n\n#{output}"
+  complete = "#{frontmatter}---\n\n# #{title_pretty}\n\n#{output}"
 
   ext = '.html.md'
 
@@ -201,12 +203,13 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     end
   end
 
-  unless title.match(/^Created page with/) && redirect[title]
+  unless comment.match(/^Created page with/) && redirect[title]
     git_author = wiki_author[username.downcase]
     git_name = git_author.nil? ? username.downcase : (git_author[:name] || username.downcase)
     git_name.gsub(/"/, "'")
     git_email = git_author.nil? ? "#{username.downcase}@wiki.conversion" : git_author[:email]
-    git_comment = comment.strip.empty? ? 'Updated' : comment.gsub(/"/, "'")
+    git_comment = comment.strip.empty? ? "Updated #{title_pretty}" : comment.gsub(/"/, "'")
+    git_comment = "Created #{title_pretty}" if comment.match(/^Created page with/)
 
     begin
       git_prefix = "cd #{path} && git --git-dir='#{path}/.git' --work-tree='#{path}'"
