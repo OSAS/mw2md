@@ -24,3 +24,4 @@ rewrite_full:
   "testcase/testcase": "testing/testcase/"
   "^vdsm-hooks/": "vdsm/hook/"
   "^vdsm/vdsm-": "vdsm/"
+  "^category/(.*).html.md": '\1/index.html.md'
