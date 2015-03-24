@@ -121,6 +121,9 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     filename = 'index'
   end
 
+  dir.gsub!(/[_\s:]/, '-')
+  dir.strip! if dir
+
   begin
     html = PandocRuby.convert(
       wikitext, :s, {
@@ -141,14 +144,6 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
            .gsub(/^- /, '* ')
            .gsub(/^`(.*)`$/, '      \\1')
 
-  dir.gsub(/[_\s:]/, '-')
-
-  begin
-    FileUtils.mkdir_p "#{path}/#{dir}"
-  rescue
-    puts "Error creating directory! #{path}/#{dir}"
-  end
-
   frontmatter = {
     'title'         => title.split(/[:\/]/).pop,
     'category'      => category_match || category_dirs,
@@ -167,7 +162,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
               .squeeze(' ')
               .gsub(/[_\s:]/, '-')
               .gsub(/-+/, '-')
-              .gsub(/["']/, '')
+              .gsub(/["';]/, '')
               .squeeze('-')
 
   percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
@@ -179,13 +174,19 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     begin
       File.delete "#{path}/#{full_file}"
     rescue
-      puts 'Error deleting file'
+      puts "Error deleting file: #{path}/#{full_file}"
     end
   else
     begin
+      FileUtils.mkdir_p "#{path}/#{dir}"
+    rescue
+      puts "Error creating directory! #{path}/#{dir}"
+    end
+
+    begin
       File.write "#{path}/#{full_file}", complete
     rescue
-      puts 'Error writing file!'
+      puts "Error writing file! #{path}/#{full_file} — #{frontmatter.inspect}"
     end
   end
 
