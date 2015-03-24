@@ -106,13 +106,13 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     category_match = v if filename.match(Regexp.new k)
   end
 
-  config['rewrite'].each do |k, v|
+  config['rewrite_file'].each do |k, v|
     filename.gsub!(Regexp.new(k), v)
   end
 
   dir = category_match || category_dirs || dirs || 'uncategorized'
 
-  config['rewrite_dirs'].each do |k, v|
+  config['rewrite_dir'].each do |k, v|
     dir.gsub!(Regexp.new(k), v)
   end
 
