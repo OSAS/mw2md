@@ -6,10 +6,20 @@ require 'pandoc-ruby'
 require 'wikicloth'
 require 'kramdown'
 require 'yaml'
+require 'sanitize'
+require 'csv'
 
 def html_clean(html)
   html
     .gsub(/ target="_blank"/, '')
+end
+
+# Authors
+wiki_author = {}
+
+CSV.foreach('authors.csv') do |col|
+  wiki_author[col[0].downcase] = { name: col[1], email: col[2] }
+  wiki_author[col[0].downcase][:name] = col[0] if col[1].strip == ''
 end
 
 path = '/tmp/mw2md-output'
