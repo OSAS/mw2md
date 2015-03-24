@@ -105,6 +105,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   category_match = nil
 
   config['catmatch'].each do |k, v|
+    next if category_match
     category_match = v if filename.match(Regexp.new k)
   end
 
