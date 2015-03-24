@@ -1,20 +1,29 @@
+# Assign category (& directory) based on filename
+# (it will stop on the first match, so order matters)
 catmatch:
+  "workshop": event/workshop
+  "event": event
   "how[ -]?to": howto
-  "workshop": workshop
+  "api": api
   "infra": infra
   "node": node
-  "api": api
-  "event": event
-  "workshop": event/workshop
+  "vdsm": vdsm
+  "guide": documentation
 
+# Rewrite filenames
 rewrite_file:
   "how[ -]?to[ -]?": ""
 
+# Rewrite directories
 rewrite_dir:
   "features": "feature"
   "home/feature": "feature"
   "infra.*": "infra"
+  "how-to": "howto"
+  "releases": "release"
 
+# Rewrite directory and filename after everything above is processed
+# (catch-all)
 rewrite_full:
   ".*/ovirt-([0-9.zx]*)-release-notes": 'release/\1/index'
   ".*/ovirt-([0-9.zx]*)-(.*)": 'release/\1/\2'
@@ -28,3 +37,7 @@ rewrite_full:
   "project-proposal/": "project/proposal/"
   "/project-proposal-": "/"
   "^draft-documentation/": "documentation/draft/"
+  "^projects/": "project/"
+  "^how-to/": "howto/"
+  "^(development)-(environment)/": '\1/\2/'
+  "^(building)-(engine)/": '\2/\1/'
