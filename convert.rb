@@ -220,4 +220,8 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   end
 end
 
-File.write '_redirects.yaml', redirect.to_yaml
+# Output redirect mappings
+File.write '#{path}/_redirects.yaml', redirect.to_yaml
+
+# Clean up repo
+`cd #{path} && git gc --aggressive && cd -`
