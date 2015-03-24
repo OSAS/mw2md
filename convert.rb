@@ -39,7 +39,7 @@ wiki_author = {}
 
 CSV.foreach(authors_csv) do |col|
   wiki_author[col[0].downcase] = { name: col[1], email: col[2] }
-  wiki_author[col[0].downcase][:name] = col[0] if col[1].strip == ''
+  wiki_author[col[0].downcase][:name] = col[0] if col[1].to_s.strip == ''
 end
 
 # Discover all redirects
