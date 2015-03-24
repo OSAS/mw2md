@@ -153,7 +153,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     # "wiki_id"       => id
   }.select { |_, val| !val.nil? }.to_yaml
 
-  complete = "#{frontmatter}---\n\n# #{frontmatter['title']}\n\n#{output}"
+  complete = "#{frontmatter}---\n\n# #{title.split(/[:\/]/).pop}\n\n#{output}"
 
   ext = '.html.md'
 
