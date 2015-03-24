@@ -165,6 +165,13 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
               .gsub(/["';]/, '')
               .squeeze('-')
 
+  config['rewrite_full'].each do |k, v|
+    # puts "BEFORE: #{full_file}"
+    full_file.gsub!(Regexp.new(k, Regexp::IGNORECASE), v)
+    # puts "AFTER: #{full_file}"
+    dir = File.dirname full_file
+  end
+
   percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
 
   puts "Writing (#{current_page}/#{number_of_pages}) #{percent}% (MWID: #{id}) #{full_file}..."
