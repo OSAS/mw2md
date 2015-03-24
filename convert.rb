@@ -3,10 +3,7 @@
 require 'fileutils'
 require 'nokogiri'
 require 'pandoc-ruby'
-require 'wikicloth'
-require 'kramdown'
 require 'yaml'
-require 'sanitize'
 require 'csv'
 
 def html_clean(html)
@@ -19,37 +16,31 @@ def fix_links(md)
   md
 end
 
+# Load configuration
+config = YAML.load_file('config.yml')
+
+# Defaults (TODO: extend configuration; have these settings be defaults)
+path = '/tmp/mw2md-output'
+authors_csv = 'authors.csv'
+dump_xml = 'dump.xml'
+
+# Create git repo
+FileUtils.mkdir_p path
+`git init #{path}`
+
+# Open and process MediaWiki dump
+mw_xml = open dump_xml
+mw = Nokogiri::XML(mw_xml)
+
 # Authors
 wiki_author = {}
 
-CSV.foreach('authors.csv') do |col|
+CSV.foreach(authors_csv) do |col|
   wiki_author[col[0].downcase] = { name: col[1], email: col[2] }
   wiki_author[col[0].downcase][:name] = col[0] if col[1].strip == ''
 end
 
-sanitize_config = Sanitize::Config
-                  .merge(Sanitize::Config::RELAXED,
-                         elements: Sanitize::Config::RELAXED[:elements] - ['span'],
-                         attributes: {
-                           'a' => %w(href title),
-                           'table' => %w(class id)
-                         })
-
-PandocRuby.allow_file_paths = true
-
-config = YAML.load_file('config.yml')
-
-path = '/tmp/mw2md-output'
-FileUtils.mkdir_p path
-
-`git init #{path}`
-
-mw_xml = open 'dump.xml'
-mw = Nokogiri::XML(mw_xml)
-
-number_of_pages = mw.css('page').count
-current_page = 0
-
+# Discover all redirects
 redirect = {}
 
 mw.css('page').select { |page| page.css('redirect') }.each do |page|
@@ -64,6 +55,7 @@ mw.css('page').select { |page| page.css('redirect') }.each do |page|
   end
 end
 
+# Break all revisions out from being grouped into pages
 revision = []
 
 mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
@@ -82,7 +74,9 @@ mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
   end
 end
 
+# Sort all revisions by time, process, and commit
 number_of_pages = revision.count
+current_page = 0
 
 revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   current_page += 1
@@ -91,7 +85,6 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   title = rev_info[:title]
   authors = rev_info[:authors]
 
-  # page.css('revision').each do |rev|
   wikitext = rev.css('text').text
 
   id = rev.css('id').text
@@ -128,152 +121,92 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     filename = 'index'
   end
 
-  output = true
-  pandoc_conversion = true
+  begin
+    html = PandocRuby.convert(
+      wikitext, :s, {
+        from: :mediawiki,
+        to:   :markdown_github
+      },
+      'atx-headers')
+           .gsub(/__TOC__/, "* ToC\n{:toc}\n\n")
+           .gsub(/^#/, '##')
+  rescue
+    puts 'Error in conversion. Skipping to next page.'
+    next
+  end
 
-  if output == true
+  output = html
+           .gsub(/\\([_#"'\$])/, '\\1')
+           .gsub(/ "wikilink"\)/, ')')
+           .gsub(/^- /, '* ')
+           .gsub(/^`(.*)`$/, '      \\1')
+
+  dir.gsub(/[_\s:]/, '-')
+
+  begin
+    FileUtils.mkdir_p "#{path}/#{dir}"
+  rescue
+    puts "Error creating directory! #{path}/#{dir}"
+  end
+
+  frontmatter = {
+    'title'         => title.split(/[:\/]/).pop,
+    'category'      => category_match || category_dirs,
+    'authors'       => authors.join(', '),
+    'wiki_category' => category,
+    'wiki_title'    => title,
+    # "wiki_id"       => id
+  }.select { |_, val| !val.nil? }.to_yaml
+
+  complete = "#{frontmatter}---\n\n# #{frontmatter['title']}\n\n#{output}"
+
+  ext = '.html.md'
+
+  full_file = "#{dir.strip}/#{filename.strip}#{ext}"
+              .downcase
+              .squeeze(' ')
+              .gsub(/[_\s:]/, '-')
+              .gsub(/-+/, '-')
+              .gsub(/["']/, '')
+              .squeeze('-')
+
+  percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
+
+  puts "Writing (#{current_page}/#{number_of_pages}) #{percent}% (MWID: #{id}) #{full_file}..."
+
+  if wikitext.match(/^#REDIRECT/) || wikitext.strip.empty?
+    puts "REDIRECTED! #{title} => #{redirect[title]}"
     begin
-      html = if pandoc_conversion
-               PandocRuby.convert(
-                 wikitext, :s, {
-                   from: :mediawiki,
-                   to:   :markdown_github
-                 },
-                 'atx-headers')
-               .gsub(/__TOC__/, "* ToC\n{:toc}\n\n")
-               .gsub(/^#/, '##')
-               # PandocRuby.mediawiki(wikitext).to_markdown_github('atx-headers')
-             else
-               # wikitext
-               # wiki_html = WikiCloth::Parser.new(data: wikitext).to_html
-
-               # PandocRuby.convert(
-               # wiki_html, :s, {
-               # from: :html,
-               # to: :markdown_github
-               # },
-               # 'atx-headers'
-               # )
-
-               wiki_html = WikiCloth::Parser.new(data: wikitext)
-                           .to_html(noedit: true, toc_numbered: false)
-                           .gsub(/<table id="toc".*\/table>/, '* ToC\\n{:toc}\\n\\n')
-               # .gsub(/<table id="toc"[^table>]*table>/, "* ToC\n{:toc}\n\n")
-
-               # .gsub(/<span class="editsection">[^span>]*<\/span>/, '')
-
-               wiki_html = Sanitize.clean(wiki_html, sanitize_config)
-                           .gsub(/<a \/>/, '')
-
-               kd = Kramdown::Document.new(wiki_html, input: 'html').to_kramdown
-               fix_links kd
-             end
+      File.delete "#{path}/#{full_file}"
     rescue
-      puts 'Error in conversion. Skipping to next page.'
-      next
+      puts 'Error deleting file'
     end
+  else
+    begin
+      File.write "#{path}/#{full_file}", complete
+    rescue
+      puts 'Error writing file!'
+    end
+  end
 
-    output = html
-             .gsub(/\\([_#"'\$])/, '\\1')
-             .gsub(/ "wikilink"\)/, ')')
-             .gsub(/^- /, '* ')
-             .gsub(/^`(.*)`$/, '      \\1')
-
-    dir.gsub(/[_\s:]/, '-')
+  unless title.match(/^Created page with/) && redirect[title]
+    git_author = wiki_author[username.downcase]
+    git_name = git_author.nil? ? username.downcase : (git_author[:name] || username.downcase)
+    git_name.gsub(/"/, "'")
+    git_email = git_author.nil? ? "#{username.downcase}@wiki.conversion" : git_author[:email]
+    git_comment = comment.strip.empty? ? 'Updated' : comment.gsub(/"/, "'")
 
     begin
-      FileUtils.mkdir_p "#{path}/#{dir}"
+      git_prefix = "cd #{path} && git --git-dir='#{path}/.git' --work-tree='#{path}'"
+      git_postfix = ' && cd - '
+
+      `#{git_prefix} add * #{git_postfix}`
+
+      `#{git_prefix} commit -a --author="#{git_name} <#{git_email}>" --date="#{timestamp}" -m "#{git_comment}" #{git_postfix}`
     rescue
-      puts 'Error creating directory!'
-    end
-
-    frontmatter = {
-      'title'         => title.split(/[:\/]/).pop,
-      'category'      => category_match || category_dirs,
-      'authors'       => authors.join(', '),
-      'wiki_category' => category,
-      'wiki_title'    => title,
-      # "wiki_id"       => id
-    }.select { |_, val| !val.nil? }.to_yaml
-
-    complete = "#{frontmatter}---\n\n# #{frontmatter['title']}\n\n#{output}"
-
-    ext = '.html.md'
-
-    full_file = "#{dir.strip}/#{filename.strip}#{ext}"
-                .downcase
-                .squeeze(' ')
-                .gsub(/[_\s:]/, '-')
-                .gsub(/-+/, '-')
-                .gsub(/["']/, '')
-                .squeeze('-')
-
-    percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
-
-    puts "Writing (#{current_page}/#{number_of_pages}) #{percent}% (MWID: #{id}) #{full_file}..."
-
-    if wikitext.match(/^#REDIRECT/) || wikitext.strip.empty?
-      puts "REDIRECTED! #{title} => #{redirect[title]}"
-      begin
-        File.delete "#{path}/#{full_file}"
-      rescue
-        puts 'Error deleting file'
-      end
-    else
-      begin
-        File.write "#{path}/#{full_file}", complete
-      rescue
-        puts 'Error writing file!'
-      end
-    end
-
-    unless title.match(/^Created page with/) && redirect[title]
-      git_author = wiki_author[username.downcase]
-      git_name = git_author.nil? ? username.downcase : (git_author[:name] || username.downcase)
-      git_name.gsub(/"/, "'")
-      git_email = git_author.nil? ? "#{username.downcase}@wiki.conversion" : git_author[:email]
-      git_comment = comment.strip.empty? ? 'Updated' : comment.gsub(/"/, "'")
-
-      begin
-        # out = system 'cd ', path,
-        # ' && git add * && git commit -a --author="', git_name,
-        # ' <', git_email, '>"',
-        # ' -- date="', timestamp, '" ',
-        # '-m "', git_comment, '" && cd -'
-
-        # git.add(all: true)
-
-        # git_out = git.commit_all(git_comment,
-        # author: "#{git_name} <#{git_email}>",
-        # author_date: timestamp,
-        # commiter_date: timestamp,
-        # date: timestamp)
-
-        # git_prefix = [' --git-dir="', path, '/.git" --work-tree="', path, "'"]
-        git_prefix = "cd #{path} && git --git-dir='#{path}/.git' --work-tree='#{path}'"
-        git_postfix = " && cd - "
-
-        # out_add = IO.popen ['git', 'add', ' *'] + git_prefix
-
-        # out = IO.popen ['git', 'commit', ' -a'] +
-                       # git_prefix +
-                       # ['--author="', git_name,
-                        # ' <', git_email, '>"',
-                        # ' -- date="', timestamp, '" ',
-                        # '-m "', git_comment, '" && cd -']
-
-        out_add = `#{git_prefix} add * #{git_postfix}`
-
-        out = `#{git_prefix} commit -a --author="#{git_name} <#{git_email}>" --date="#{timestamp}" -m "#{git_comment}" #{git_postfix}`
-
-        puts out_add ? 'ADD SUCEESS' : 'ADD FAIL'
-        puts out ? 'SUCEESS' : 'FAIL'
-      rescue
-        puts "Error committing! #{out} :: #{out_add}"
-      end
+      puts "Error committing! #{out} :: #{out_add}"
     end
   end
 end
 
-File.write 'revisions.yaml', revision.to_yaml
 File.write '_redirects.yaml', redirect.to_yaml
