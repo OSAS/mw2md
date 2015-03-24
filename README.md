@@ -4,6 +4,9 @@ Have data stuck in MediaWiki, but you'd really want a simple static site?
 
 Never fear! `mw2md` is here for you!
 
+It will convert a MediaWiki XML dump to a git repo full of Markdown files.
+
+
 ## Installation
 
 ### Pandoc
