@@ -1,0 +1,9 @@
+catmatch:
+  "how[ -]?to": howto
+
+rewrite:
+  "how[ -]?to[ -]?": ""
+
+rewrite_dirs:
+  "features": "feature"
+  "home/feature": "feature"
