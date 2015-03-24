@@ -11,6 +11,8 @@ Never fear! `mw2md` is here for you!
 As Fedora 21, RHEL 7.x, and CentOS 7.x (and below) have a buggy version of
 Pandoc, you'll need to upgrade. Thankfully, there's a copr perfect for this.
 
+<https://copr.fedoraproject.org/coprs/petersen/pandoc/>
+
 ```
 sudo yum copr enable petersen/pandoc
 sudo yum install pandoc
