@@ -174,7 +174,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     metadata[v] = matches.captures.join(', ').squeeze(' ').strip if matches
   end
 
-  frontmatter = metadata.select { |_, val| !val.nil? && !val.empty? }.to_yaml
+  frontmatter = metadata.select { |_, v| !v.nil? && !v.to_s.empty? }.to_yaml
 
   complete = "#{frontmatter}---\n\n# #{title_pretty}\n\n#{output}"
 
