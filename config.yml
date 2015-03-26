@@ -42,6 +42,7 @@ rewrite_full:
   "^(development)-(environment)/": '\1/\2/'
   "^(building)-(engine)/": '\2/\1/'
 
+# Match original wikitext and add metadata to frontmatter
 frontmatter:
   "{{Feature|[^}]*name=([^|}]*)": "feature_name"
   "{{Feature|[^}]*modules=([^|}]*)": "feature_modules"
