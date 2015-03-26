@@ -73,7 +73,8 @@ mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
                   title: title,
                   authors: authors,
                   timestamp: rev.css('timestamp').text,
-                  revision_count: page.css('revision').count
+                  revision_count: page.css('revision').count,
+                  last_updated: page.css('timestamp').sort.last.text
   end
 end
 
@@ -163,7 +164,8 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     'wiki_category' => category,
     'wiki_title'    => title,
     'wiki_revision_count' => rev_info[:revision_count],
-    'wiki_date' => Date.parse(timestamp)
+    'wiki_last_updated' => Date.parse(rev_info[:last_updated])
+    # 'wiki_date' => Date.parse(timestamp)
     # "wiki_id"       => id
   }
 
