@@ -150,14 +150,25 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
 
   title_pretty = title.split(/[:\/]/).pop
 
-  frontmatter = {
+  metadata = {
     'title'         => title_pretty,
     'category'      => category_match || category_dirs,
     'authors'       => authors.join(', '),
     'wiki_category' => category,
     'wiki_title'    => title,
     # "wiki_id"       => id
-  }.select { |_, val| !val.nil? }.to_yaml
+  }
+
+  # Add frontmatter based on matchers from config
+  # (matchers apply to wiki source, which has data the conversion lacks)
+  config['frontmatter'].each do |k, v|
+    metadata[v] = wikitext
+                  .gsub(/<!\-\-[^\-\->]*\-\->/m, '')
+                  .match(Regexp.new k).captures
+                  .join(', ').squeeze(' ').strip
+  end
+
+  frontmatter = metadata.select { |_, val| !val.nil? && !val.empty? }.to_yaml
 
   complete = "#{frontmatter}---\n\n# #{title_pretty}\n\n#{output}"
 
