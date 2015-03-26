@@ -167,10 +167,8 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   # Add frontmatter based on matchers from config
   # (matchers apply to wiki source, which has data the conversion lacks)
   config['frontmatter'].each do |k, v|
-    metadata[v] = wikitext
-                  .gsub(/<!\-\-[^\-\->]*\-\->/m, '')
-                  .match(Regexp.new k).captures
-                  .join(', ').squeeze(' ').strip
+    matches = wikitext.gsub(/<!\-\-[^\-\->]*\-\->/m, '').match(Regexp.new k)
+    metadata[v] = matches.captures.join(', ').squeeze(' ').strip if matches
   end
 
   frontmatter = metadata.select { |_, val| !val.nil? && !val.empty? }.to_yaml
