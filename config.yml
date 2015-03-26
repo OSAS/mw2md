@@ -41,3 +41,8 @@ rewrite_full:
   "^how-to/": "howto/"
   "^(development)-(environment)/": '\1/\2/'
   "^(building)-(engine)/": '\2/\1/'
+
+frontmatter:
+  "{{Feature|[^}]*name=([^|}]*)": "feature_name"
+  "{{Feature|[^}]*modules=([^|}]*)": "feature_modules"
+  "{{Feature|[^}]*status=([^|}]*)": "feature_status"
