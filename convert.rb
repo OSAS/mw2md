@@ -65,7 +65,7 @@ mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
 
   next if title.match(/^File:/)
 
-  authors = page.css('username').map { |u| u.text.downcase }.sort.uniq
+  authors = page.css('username').map { |u| u.text.downcase.strip }.sort.uniq
 
   page.css('revision').each do |rev|
     revision.push page: page,
@@ -101,7 +101,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   dirs = nil if dirs.empty?
 
   category = wikitext.match(/\[\[Category\:([^\]]*)\]\]/i)
-  category = category[1] if category.class == MatchData
+  category = category[1].strip if category.class == MatchData
   category_dirs = category.downcase.strip.split(/[|\/]/).first if category
 
   category_match = nil
