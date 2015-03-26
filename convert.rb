@@ -127,6 +127,11 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   dir.gsub!(/[_\s:]/, '-')
   dir.strip! if dir
 
+  # Rewrite some wiki constructs into HTML, to be processed into Markdown
+  config['rewrite_wiki'].each do |k, v|
+    wikitext.gsub!(Regexp.new(k), v)
+  end
+
   begin
     html = PandocRuby.convert(
       wikitext, :s, {
