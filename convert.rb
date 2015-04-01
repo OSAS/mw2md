@@ -154,6 +154,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
            .gsub(/ "wikilink"\)/, ')')
            .gsub(/^- /, '* ')
            .gsub(/^`(.*)`$/, '      \\1')
+           .gsub(/\[(\/\/[^ \]]*) ([^\]]*)\]/, '[\2](\1)') # handle // links
 
   title_pretty = title.split(/[:\/]/).pop
 
