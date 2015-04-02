@@ -62,18 +62,22 @@ revision = []
 
 mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
   title = page.css('title').text.strip
+  page_revisions = page.css('revision')
 
   next if title.match(/^File:/)
 
   authors = page.css('username').map { |u| u.text.downcase.strip }.sort.uniq
 
-  page.css('revision').each do |rev|
+  final_revision = page_revisions.sort_by { |r| r.css('timestamp').text }.last
+
+  page_revisions.each do |rev|
     revision.push page: page,
                   revision: rev,
+                  final_revision: final_revision,
                   title: title,
                   authors: authors,
                   timestamp: rev.css('timestamp').text,
-                  revision_count: page.css('revision').count,
+                  revision_count: page_revisions.count,
                   last_updated: page.css('timestamp').sort.last.text
   end
 end
@@ -90,6 +94,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   authors = rev_info[:authors]
 
   wikitext = rev.css('text').text
+  wikitext_final = rev_info[:final_revision].css('text').text
 
   id = rev.css('id').text
   timestamp = rev.css('timestamp').text
@@ -100,7 +105,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   dirs = dirs.join('/').strip
   dirs = nil if dirs.empty?
 
-  category = wikitext.match(/\[\[Category\:([^\]]*)\]\]/i)
+  category = wikitext_final.match(/\[\[Category\:([^\]]*)\]\]/i)
   category = category[1].strip if category.class == MatchData
   category_dirs = category.downcase.strip.split(/[|\/]/).first if category
 
