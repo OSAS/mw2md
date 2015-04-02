@@ -44,9 +44,9 @@ rewrite_full:
 
 # Match original wikitext and add metadata to frontmatter
 frontmatter:
-  "{{Feature|[^}]*name=([^|}]*)": "feature_name"
-  "{{Feature|[^}]*modules=([^|}]*)": "feature_modules"
-  "{{Feature|[^}]*status=([^|}]*)": "feature_status"
+  "{{Feature|[^}]*name=([^|}]*)[^}]*}}": "feature_name"
+  "{{Feature|[^}]*modules=([^|}]*)[^}]*}}": "feature_modules"
+  "{{Feature|[^}]*status=([^|}]*)[^}]*}}": "feature_status"
 
 # Rewrite special wiki constructs to be markdown-friendly
 # (output should be HTML that feeds into the Markdown conversion)
