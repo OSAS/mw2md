@@ -94,6 +94,8 @@ number_of_pages = revision.count
 current_page = 0
 
 progress = ProgressBar.create format: '%a |%e |%b>%i| %p%% %t',
+                              smoothing: 0.7,
+                              throttle_rate: 1.0,
                               total: number_of_pages
 
 revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
@@ -256,7 +258,8 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     git_author = Shellwords.escape "#{git_name} <#{git_email}>"
 
     command = 'git add * && git commit -q -a ' \
-      "--author=#{git_author} --date='#{timestamp}' -m #{git_comment}"
+      "--author=#{git_author} --date='#{timestamp}' -m #{git_comment}" \
+      ' &> /dev/null'
 
     begin
       Process.wait Kernel.spawn(command, chdir: path)
