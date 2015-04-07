@@ -17,6 +17,7 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    ruby-progressbar (1.7.1)
     sanitize (3.1.1)
       crass (~> 1.0.1)
       nokogiri (>= 1.4.4)
@@ -40,5 +41,6 @@ DEPENDENCIES
   nokogiri
   pandoc-ruby
   pry
+  ruby-progressbar
   sanitize
   wikicloth

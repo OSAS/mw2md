@@ -6,6 +6,7 @@ require 'pandoc-ruby'
 require 'yaml'
 require 'csv'
 require 'shellwords'
+require 'ruby-progressbar'
 
 def html_clean(html)
   html.gsub(/ target="_blank"/, '')
@@ -90,6 +91,9 @@ end
 number_of_pages = revision.count
 current_page = 0
 
+progress = ProgressBar.create format: '%a |%e |%b>%i| %p%% %t',
+                              total: number_of_pages
+
 revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   current_page += 1
 
@@ -156,7 +160,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     # Demote headings if there's an H1 already
     html.gsub!(/^#/, '##') if html.match(/^# /)
   rescue
-    puts 'Error in conversion. Skipping to next page.'
+    puts "Error converting '#{title}'. Skipped."
     next
   end
 
@@ -204,23 +208,24 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
               .squeeze('-')
 
   config['rewrite_full'].each do |k, v|
-    # puts "BEFORE: #{full_file}"
     full_file.gsub!(Regexp.new(k, Regexp::IGNORECASE), v)
-    # puts "AFTER: #{full_file}"
     dir = File.dirname full_file
   end
 
-  percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
+  # percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
 
-  puts "Writing (#{current_page}/#{number_of_pages}) " \
-    "#{percent}% (MWID: #{id}) #{full_file}..."
+  # puts "Writing (#{current_page}/#{number_of_pages}) " \
+  # "#{percent}% (MWID: #{id}) #{full_file}..."
+
+  # Update progressbar
+  progress.increment
 
   if wikitext.match(/^#REDIRECT/) || wikitext.strip.empty?
-    puts "REDIRECTED! #{title} => #{redirect[title]}"
+    # puts "REDIRECTED! #{title} => #{redirect[title]}"
     begin
       File.delete "#{path}/#{full_file}"
     rescue
-      puts "Error deleting file: #{path}/#{full_file}"
+      # puts "Error deleting file: #{path}/#{full_file}"
     end
   else
     begin
