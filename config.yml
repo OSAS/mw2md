@@ -44,12 +44,12 @@ rewrite_full:
 
 # Match original wikitext and add metadata to frontmatter
 frontmatter:
-  "{{Feature|[^}]*name=([^|}]*)[^}]*}}": "feature_name"
-  "{{Feature|[^}]*modules=([^|}]*)[^}]*}}": "feature_modules"
-  "{{Feature|[^}]*status=([^|}]*)[^}]*}}": "feature_status"
+  '\{\{Feature\|[^}]*name=([^\|}]*)[^}]*\}\}': "feature_name"
+  '\{\{Feature\|[^}]*modules=([^\|}]*)[^}]*\}\}': "feature_modules"
+  '\{\{Feature\|[^}]*status=([^\|}]*)[^}]*\}\}': "feature_status"
 
 # Rewrite special wiki constructs to be markdown-friendly
 # (output should be HTML that feeds into the Markdown conversion)
 rewrite_wiki:
-  '{{#ev:youtube\|([^|}]*)\|([^|}]*)}}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" allowfullscreen="true"> </iframe>'
-  '{{#ev:youtube\|([^|}]*)\|([^|}]*)\|([^|}]*)[^}]?}}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" align="\3" allowfullscreen="true"> </iframe>'
+  '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" allowfullscreen="true"> </iframe>'
+  '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\|([^|}]*)[^}]?\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" align="\3" allowfullscreen="true"> </iframe>'
