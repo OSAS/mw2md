@@ -27,6 +27,8 @@ authors_csv = 'authors.csv'
 dump_xml = 'dump.xml'
 history = true
 
+errors = {}
+
 puts "Prossing #{dump_xml}. Output directory: #{path}"
 
 # Create git repo
@@ -161,6 +163,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     html.gsub!(/^#/, '##') if html.match(/^# /)
   rescue
     puts "Error converting '#{title}'. Skipped."
+    errors[title.to_s] = wikitext
     next
   end
 
@@ -261,6 +264,12 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
       puts 'Error committing!'
     end
   end
+end
+
+FileUtils.mkdir_p 'errors/'
+errors.each do |fname, text|
+  filename_clean = fname.gsub(/[:\/<>&]/, '').squeeze(' ').gsub(/[: ]/, '_')
+  File.write "errors/#{filename_clean}.wiki", text
 end
 
 # Output redirect mappings
