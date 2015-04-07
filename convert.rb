@@ -5,6 +5,7 @@ require 'nokogiri'
 require 'pandoc-ruby'
 require 'yaml'
 require 'csv'
+require 'shellwords'
 
 def html_clean(html)
   html.gsub(/ target="_blank"/, '')
@@ -23,12 +24,13 @@ config = YAML.load_file('config.yml')
 path = '/tmp/mw2md-output'
 authors_csv = 'authors.csv'
 dump_xml = 'dump.xml'
+history = true
 
 puts "Prossing #{dump_xml}. Output directory: #{path}"
 
 # Create git repo
 FileUtils.mkdir_p path
-`git init #{path}`
+Process.wait Kernel.spawn('git init .', chdir: path) if history
 
 # Open and process MediaWiki dump
 mw_xml = open dump_xml
@@ -60,7 +62,7 @@ end
 # Break all revisions out from being grouped into pages
 revision = []
 
-mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
+mw.css('page').each do |page|
   title = page.css('title').text.strip
   page_revisions = page.css('revision')
 
@@ -69,6 +71,8 @@ mw.css('page').sort_by { |page| page.css('timestamp').text }.each do |page|
   authors = page.css('username').map { |u| u.text.downcase.strip }.sort.uniq
 
   final_revision = page_revisions.sort_by { |r| r.css('timestamp').text }.last
+
+  page_revisions = [final_revision] unless history
 
   page_revisions.each do |rev|
     revision.push page: page,
@@ -149,8 +153,8 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
            .gsub(/__TOC__/, "* ToC\n{:toc}\n\n")
            .gsub(/__NOTOC__/, '{:.no_toc}')
 
-      # Demote headings if there's an H1 already
-      html.gsub!(/^#/, '##') if html.match(/^# /)
+    # Demote headings if there's an H1 already
+    html.gsub!(/^#/, '##') if html.match(/^# /)
   rescue
     puts 'Error in conversion. Skipping to next page.'
     next
@@ -208,7 +212,8 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
 
   percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
 
-  puts "Writing (#{current_page}/#{number_of_pages}) #{percent}% (MWID: #{id}) #{full_file}..."
+  puts "Writing (#{current_page}/#{number_of_pages}) " \
+    "#{percent}% (MWID: #{id}) #{full_file}..."
 
   if wikitext.match(/^#REDIRECT/) || wikitext.strip.empty?
     puts "REDIRECTED! #{title} => #{redirect[title]}"
@@ -231,23 +236,24 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     end
   end
 
-  unless comment.match(/^Created page with/) && redirect[title]
+  unless comment.match(/^Created page with/) && redirect[title] || !history
     git_author = wiki_author[username.downcase]
     git_name = git_author.nil? ? username.downcase : (git_author[:name] || username.downcase)
-    git_name.gsub(/"/, "'")
     git_email = git_author.nil? ? "#{username.downcase}@wiki.conversion" : git_author[:email]
-    git_comment = comment.strip.empty? ? "Updated #{title_pretty}" : comment.gsub(/"/, "'")
+    git_comment = comment.strip.empty? ? "Updated #{title_pretty}" : comment
     git_comment = "Created #{title_pretty}" if comment.match(/^Created page with/)
 
+    # Shell-escape strings before they hit the command line
+    git_comment = Shellwords.escape git_comment
+    git_author = Shellwords.escape "#{git_name} <#{git_email}>"
+
+    command = 'git add * && git commit -q -a ' \
+      "--author=#{git_author} --date='#{timestamp}' -m #{git_comment}"
+
     begin
-      git_prefix = "cd #{path} && git --git-dir='#{path}/.git' --work-tree='#{path}'"
-      git_postfix = ' && cd - '
-
-      `#{git_prefix} add * #{git_postfix}`
-
-      `#{git_prefix} commit -a --author="#{git_name} <#{git_email}>" --date="#{timestamp}" -m "#{git_comment}" #{git_postfix}`
+      Process.wait Kernel.spawn(command, chdir: path)
     rescue
-      puts "Error committing! #{out} :: #{out_add}"
+      puts 'Error committing!'
     end
   end
 end
@@ -256,4 +262,4 @@ end
 File.write "#{path}/_redirects.yaml", redirect.to_yaml
 
 # Clean up repo
-`cd #{path} && git gc --aggressive && cd -`
+Process.wait Kernel.spawn('git gc --aggressive', chdir: path) if history
