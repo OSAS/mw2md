@@ -292,4 +292,7 @@ puts "#{errors.count} error#{errors.count != 1 ? 's' : ''} " \
 File.write "#{path}/_redirects.yaml", redirect.to_yaml
 
 # Clean up repo
-Process.wait Kernel.spawn('git gc --aggressive', chdir: path) if history
+if history
+  puts "Re-packing repo:"
+  Process.wait Kernel.spawn('git gc --aggressive', chdir: path)
+end
