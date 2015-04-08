@@ -75,6 +75,7 @@ mw.css('page').each do |page|
 
   final_revision = page_revisions.sort_by { |r| r.css('timestamp').text }.last
 
+  revision_count = page_revisions.count
   page_revisions = [final_revision] unless history
 
   page_revisions.each do |rev|
@@ -84,7 +85,7 @@ mw.css('page').each do |page|
                   title: title,
                   authors: authors,
                   timestamp: rev.css('timestamp').text,
-                  revision_count: page_revisions.count,
+                  revision_count: revision_count,
                   last_updated: page.css('timestamp').sort.last.text
   end
 end
