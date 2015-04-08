@@ -21,11 +21,11 @@ end
 # Load configuration
 config = YAML.load_file('config.yml')
 
-# Defaults (TODO: extend configuration; have these settings be defaults)
-path = '/tmp/mw2md-output'
-authors_csv = 'authors.csv'
-dump_xml = 'dump.xml'
-history = true
+# Load settings, fall back to defaults otherwise
+path = config['output'] || '/tmp/mw2md-output'
+authors_csv = config['authors_csv'] || 'authors.csv'
+dump_xml = config['wiki_xml'] || 'dump.xml'
+history = config['history'].nil? ? true : config['history']
 
 errors = {}
 
