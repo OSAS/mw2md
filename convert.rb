@@ -198,6 +198,13 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     metadata[v] = matches.captures.join(', ').squeeze(' ').strip if matches
   end
 
+  config['warnings'].each do |k, v|
+    if wikitext.gsub(/<!\-\-[^\-\->]*\-\->/m, '').match(Regexp.new k)
+      warnz = metadata['wiki_warnings'].to_s.split(/, /)
+      metadata['wiki_warnings'] = warnz.push(v).uniq.join(', ')
+    end
+  end
+
   frontmatter = metadata.select { |_, v| !v.nil? && !v.to_s.empty? }.to_yaml
 
   complete = "#{frontmatter}---\n\n# #{title_pretty}\n\n#{output}"

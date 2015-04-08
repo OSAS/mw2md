@@ -53,3 +53,11 @@ frontmatter:
 rewrite_wiki:
   '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" allowfullscreen="true"> </iframe>'
   '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\|([^|}]*)[^}]?\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" align="\3" allowfullscreen="true"> </iframe>'
+
+warnings:
+  '<references>': 'references'
+  '<\/ref>': 'references'
+  '\|style\=': 'table-style'
+  '\|colspan\=': 'table-colspan'
+  '\|width\=': 'table-width'
+  '^\:\*': 'list-item?'
