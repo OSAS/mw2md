@@ -277,6 +277,8 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   end
 end
 
+progress.finish
+
 FileUtils.mkdir_p 'errors/'
 errors.each do |fname, text|
   filename_clean = fname.gsub(/[:\/<>&]/, '').squeeze(' ').gsub(/[: ]/, '_')
