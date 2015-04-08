@@ -165,7 +165,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     # Demote headings if there's an H1 already
     html.gsub!(/^#/, '##') if html.match(/^# /)
   rescue
-    puts "Error converting '#{title}'. Skipped."
+    # puts "Error converting '#{title}'. Skipped."
     errors[title.to_s] = wikitext
     next
   end
