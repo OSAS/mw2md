@@ -1,3 +1,12 @@
+# Settings
+output: '/tmp/mw2md-ovirt'
+authors_csv: 'authors.csv'
+wiki_xml: 'dump.xml'
+history: false
+
+# Regular expression of pages to skip
+skip: '^(user|user talk|talk|template|mediawiki):'
+
 # Assign category (& directory) based on filename
 # (it will stop on the first match, so order matters)
 catmatch:
