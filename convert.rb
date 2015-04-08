@@ -283,6 +283,11 @@ errors.each do |fname, text|
   File.write "errors/#{filename_clean}.wiki", text
 end
 
+puts "\nConversion done!"
+
+puts "#{errors.count} error#{errors.count != 1 ? 's' : ''} " \
+  'found, and saved in ./errors/' if errors
+
 # Output redirect mappings
 File.write "#{path}/_redirects.yaml", redirect.to_yaml
 
