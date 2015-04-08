@@ -55,6 +55,7 @@ mw.css('page').select { |page| page.css('redirect') }.each do |page|
   redir = page.css('redirect').attr('title').text rescue ''
 
   next if title.match(/^File:/)
+  next if title.match(Regexp.new(config['skip'], Regexp::IGNORECASE))
 
   unless redir.strip == ''
     # puts "Redirect! #{title} => #{redir}"
@@ -70,6 +71,7 @@ mw.css('page').each do |page|
   page_revisions = page.css('revision')
 
   next if title.match(/^File:/)
+  next if title.match(Regexp.new(config['skip'], Regexp::IGNORECASE))
 
   authors = page.css('username').map { |u| u.text.downcase.strip }.sort.uniq
 
