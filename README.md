@@ -46,7 +46,7 @@ bundle install
 
 5. Wait
 6. Check your output directory (in `/tmp/mw2md-output` by default)
-7. Repeat setps 3 - 6 when necessary
+7. Repeat steps 3 - 6 when necessary
 
 Note: As-is, you'll need to nuke the output directory before running again
 (right before step 4), else you'll wind up with duplicated history.
