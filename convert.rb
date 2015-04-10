@@ -167,32 +167,38 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
       'atx-headers')
     conversion_error = false
   rescue
-    # Fallback conversion, as pandoc bailed on us
+    begin
+      # Fallback conversion, as pandoc bailed on us
 
-    # Invoke WikiCloth
-    wikicloth = WikiCloth::Parser.new(data: wikitext).to_html
+      # Invoke WikiCloth
+      wikicloth = WikiCloth::Parser.new(data: wikitext).to_html
 
-    # Pass the WikiCloth HTML to Nokogiri for additional processing
-    wiki_html = Nokogiri::HTML::DocumentFragment.parse(wikicloth)
+      # Pass the WikiCloth HTML to Nokogiri for additional processing
+      wiki_html = Nokogiri::HTML::DocumentFragment.parse(wikicloth)
 
-    # Remove various MediaWiki-isms
-    wiki_html.css('#toc').remove
-    wiki_html.css('.editsection').remove
-    wiki_html.css('a[name]').each { |n| n.remove if n.text.empty? }
-    wiki_html.css('.mw-headline').each { |n| n.replace n.text }
+      # Remove various MediaWiki-isms
+      wiki_html.css('#toc').remove
+      wiki_html.css('.editsection').remove
+      wiki_html.css('a[name]').each { |n| n.remove if n.text.empty? }
+      wiki_html.css('.mw-headline').each { |n| n.replace n.text }
 
-    # Simplify tables (to increase the liklihood of conversion)
-    wiki_html.css('table,tr,th,td').each do |n|
-      n.keys.each { |key| n.delete(key) unless key.match(/span/) }
+      # Simplify tables (to increase the liklihood of conversion)
+      wiki_html.css('table,tr,th,td').each do |n|
+        n.keys.each { |key| n.delete(key) unless key.match(/span/) }
+      end
+
+      # Call upon Pandoc again, but this time with scrubbed HTML
+      markdown = PandocRuby.convert(
+        wiki_html, :s, {
+          from: :html,
+          to:   :markdown_github
+        },
+        'atx-headers')
+    rescue
+      puts "Error converting #{title}. Fallback even failed. #sadface"
+      errors[title.to_s] = wikitext
+      next
     end
-
-    # Call upon Pandoc again, but this time with scrubbed HTML
-    markdown = PandocRuby.convert(
-      wiki_html, :s, {
-        from: :html,
-        to:   :markdown_github
-      },
-      'atx-headers')
 
     conversion_error = true
   end
