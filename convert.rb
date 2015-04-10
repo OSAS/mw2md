@@ -332,6 +332,6 @@ File.write "#{path}/_redirects.yaml", redirect.to_yaml
 
 # Clean up repo
 if history
-  puts "Re-packing repo:"
+  puts 'Re-packing repo:'
   Process.wait Kernel.spawn('git gc --aggressive', chdir: path)
 end
