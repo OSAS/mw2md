@@ -213,6 +213,11 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
            .gsub(/\[(\/\/[^ \]]*) ([^\]]*)\]/, '[\2](\1)') # handle // links
            .gsub(/(^\|+$)/, '') # Wipe out empty table rows
 
+  # Custom markdown rewriting rules
+  config['rewrite_markdown'].each do |k, v|
+    output.gsub!(Regexp.new(k), v)
+  end
+
   title_pretty = title.split(/[:\/]/).pop
 
   metadata = {
