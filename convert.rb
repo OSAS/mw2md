@@ -165,7 +165,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
         to:   :markdown_github
       },
       'atx-headers')
-    conversion_errors = false
+    conversion_error = false
   rescue
     # Fallback conversion, as pandoc bailed on us
 
@@ -194,7 +194,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
       },
       'atx-headers')
 
-    conversion_errors = true
+    conversion_error = true
   end
 
   next unless markdown
@@ -232,6 +232,11 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   config['frontmatter'].each do |k, v|
     matches = wikitext.gsub(/<!\-\-[^\-\->]*\-\->/m, '').match(Regexp.new k)
     metadata[v] = matches.captures.join(', ').squeeze(' ').strip if matches
+  end
+
+  if conversion_error
+    metadata['wiki_conversion_fallback'] = true
+    metadata['wiki_warnings'] = 'conversion-fallback'
   end
 
   config['warnings'].each do |k, v|
@@ -322,10 +327,10 @@ if errors
   end
 end
 
-puts "\nConversion done!"
+puts 'Conversion done!'
 
 puts "#{errors.count} error#{errors.count != 1 ? 's' : ''} " \
-  'found, and saved in ./errors/' if errors
+  'found, and saved in ./errors/' if errors.count > 0
 
 # Output redirect mappings
 File.write "#{path}/_redirects.yaml", redirect.to_yaml
