@@ -63,6 +63,15 @@ rewrite_wiki:
   '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" allowfullscreen="true"> </iframe>'
   '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\|([^|}]*)[^}]?\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" align="\3" allowfullscreen="true"> </iframe>'
 
+rewrite_markdown:
+  '^:\\\* ':   '    * '
+  '^::\\\* ':  '        * '
+  '^:::\\\* ': '            * '
+  '^:# ':   '    1. '
+  '^::# ':  '        1. '
+  '^:::# ': '            1. '
+  "'''([^']*)'''": '**\\1**'
+
 warnings:
   '<references>': 'references'
   '<\/ref>': 'references'
