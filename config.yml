@@ -63,13 +63,17 @@ rewrite_wiki:
   '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" allowfullscreen="true"> </iframe>'
   '\{\{#ev:youtube\|([^|}]*)\|([^|}]*)\|([^|}]*)[^}]?\}\}': '<iframe width="\2" src="//youtube.com/embed/\1" frameborder="0" align="\3" allowfullscreen="true"> </iframe>'
 
+# Rewrite resulting Markdown
 rewrite_markdown:
+  # Fix dd-indented bullets
   '^:\\\* ':   '    * '
   '^::\\\* ':  '        * '
   '^:::\\\* ': '            * '
+  # Fix dd-indentent numbered lists
   '^:# ':   '    1. '
   '^::# ':  '        1. '
   '^:::# ': '            1. '
+  # Fix bolding not getting translated
   "'''([^']*)'''": '**\\1**'
 
 warnings:
