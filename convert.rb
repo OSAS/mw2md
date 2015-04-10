@@ -7,16 +7,15 @@ require 'yaml'
 require 'csv'
 require 'shellwords'
 require 'ruby-progressbar'
+require 'wikicloth'
+require 'kramdown'
 
-def html_clean(html)
-  html.gsub(/ target="_blank"/, '')
-end
-
-def fix_links(md)
-  matches = /^\[(\n+)\]: (.*)$/.match(md)
-  # puts "MATCHES: #{matches.inspect}" if matches
-  md
-end
+# Restrict WikiCloth's escaping to just 'nowiki' tags
+# and do so without a Ruby warning about chaging constants
+orig_verbosity = $VERBOSE
+$VERBOSE = nil
+WikiCloth::WikiBuffer::HTMLElement.const_set(:ESCAPED_TAGS, ['nowiki'])
+$VERBOSE = orig_verbosity
 
 # Load configuration
 config = YAML.load_file('config.yml')
@@ -155,28 +154,57 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   end
 
   begin
-    html = PandocRuby.convert(
+    markdown = PandocRuby.convert(
       wikitext, :s, {
         from: :mediawiki,
         to:   :markdown_github
       },
       'atx-headers')
-           .gsub(/__TOC__/, "* ToC\n{:toc}\n\n")
-           .gsub(/__NOTOC__/, '{:.no_toc}')
-
-    # Demote headings if there's an H1 already
-    html.gsub!(/^#/, '##') if html.match(/^# /)
+    conversion_errors = false
   rescue
-    # puts "Error converting '#{title}'. Skipped."
-    errors[title.to_s] = wikitext
-    next
+    # Fallback conversion, as pandoc bailed on us
+
+    # Invoke WikiCloth
+    wikicloth = WikiCloth::Parser.new(data: wikitext).to_html
+
+    # Pass the WikiCloth HTML to Nokogiri for additional processing
+    wiki_html = Nokogiri::HTML::DocumentFragment.parse(wikicloth)
+
+    # Remove various MediaWiki-isms
+    wiki_html.css('#toc').remove
+    wiki_html.css('.editsection').remove
+    wiki_html.css('a[name]').each { |n| n.remove if n.text.empty? }
+    wiki_html.css('.mw-headline').each { |n| n.replace n.text }
+
+    # Simplify tables (to increase the liklihood of conversion)
+    wiki_html.css('table,tr,th,td').each do |n|
+      n.keys.each { |key| n.delete(key) unless key.match(/span/) }
+    end
+
+    # Call upon Pandoc again, but this time with scrubbed HTML
+    markdown = PandocRuby.convert(
+      wiki_html, :s, {
+        from: :html,
+        to:   :markdown_github
+      },
+      'atx-headers')
+
+    conversion_errors = true
   end
 
-  output = html
-           .gsub(/\\([_#"'\$])/, '\\1')
-           .gsub(/ "wikilink"\)/, ')')
-           .gsub(/^- /, '* ')
-           .gsub(/^`(.*)`$/, '      \\1')
+  next unless markdown
+
+  # Demote headings if H1 exists
+  markdown.gsub!(/^#/, '##') if markdown.match(/^# /)
+
+  # Clean up generated Markdown
+  output = markdown
+           .gsub(/__TOC__/, "* ToC\n{:toc}\n\n") # Convert table of contents
+           .gsub(/__NOTOC__/, '{:.no_toc}') # Handle explicit no-ToC
+           .gsub(/\\([_#"'<>$])/, '\\1') # Unescape overly-escaped
+           .gsub(/ "wikilink"\)/, ')') # Remove wikilink link classes
+           .gsub(/^- /, '* ') # Change first item of bulleted lists
+           .gsub(/^`(.*)`$/, '      \\1') # Use indents for blockquotes
            .gsub(/\[(\/\/[^ \]]*) ([^\]]*)\]/, '[\2](\1)') # handle // links
            .gsub(/(^\|+$)/, '') # Wipe out empty table rows
 
@@ -281,10 +309,12 @@ end
 
 progress.finish
 
-FileUtils.mkdir_p 'errors/'
-errors.each do |fname, text|
-  filename_clean = fname.gsub(/[:\/<>&]/, '').squeeze(' ').gsub(/[: ]/, '_')
-  File.write "errors/#{filename_clean}.wiki", text
+if errors
+  FileUtils.mkdir_p 'errors/'
+  errors.each do |fname, text|
+    filename_clean = fname.gsub(/[:\/<>&]/, '').squeeze(' ').gsub(/[: ]/, '_')
+    File.write "errors/#{filename_clean}.html.md", text
+  end
 end
 
 puts "\nConversion done!"
