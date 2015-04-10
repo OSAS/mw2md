@@ -75,6 +75,11 @@ rewrite_markdown:
   '^:::# ': '            1. '
   # Fix bolding not getting translated
   "'''([^']*)'''": '**\\1**'
+  # Fix empty lines with trailing space
+  # (as often seen in code blocks)
+  '^\s+$': ''
+  # Fix username (oVirt-specific)
+  '<username>': '&lt;username&gt;'
 
 warnings:
   '<references>': 'references'
