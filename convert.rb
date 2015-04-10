@@ -119,9 +119,14 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   dirs = dirs.join('/').strip
   dirs = nil if dirs.empty?
 
-  category = wikitext_final.match(/\[\[Category\:([^\]]*)\]\]/i)
+  category_match = /\[\[Category\:([^\]]*)\]\]/i
+  category = wikitext_final.match(category_match)
   category = category[1].strip if category.class == MatchData
   category_dirs = category.downcase.strip.split(/[|\/]/).first if category
+
+  # Wipe category text from the MediaWiki source so it's not converted
+  # in-page (however, it's still preserved in metadata, thanks to above)
+  wikitext_final.gsub!(category_match, '') if category
 
   category_match = nil
 
