@@ -9,6 +9,8 @@ require 'shellwords'
 require 'ruby-progressbar'
 require 'wikicloth'
 require 'kramdown'
+require 'fuzzystringmatch'
+require 'active_support'
 
 # Restrict WikiCloth's escaping to just 'nowiki' tags
 # and do so without a Ruby warning about chaging constants
@@ -25,6 +27,24 @@ path = config['output'] || '/tmp/mw2md-output'
 authors_csv = config['authors_csv'] || 'authors.csv'
 dump_xml = config['wiki_xml'] || 'dump.xml'
 history = config['history'].nil? ? true : config['history']
+
+fuzzymatch = FuzzyStringMatch::JaroWinkler.create(:pure)
+
+# Functions (TODO: Move to a library file)
+
+def fix_headings html, offset = 0
+  heading_depth = html.scan(/^(#+ ).*/) || ['']
+  heading_depth = heading_depth.map { |c| c.first.strip.length }
+  heading_depth.pop
+
+  return html if heading_depth.min.nil? || heading_depth.min <= 1 + offset
+
+  hash = "#" * (heading_depth.min - 1)
+  hash_offset = "#" * offset
+  html.gsub(/^#{hash}(#?) (.*)/, "#{hash_offset}\\1 \\2")
+end
+
+# Begin the logic
 
 errors = {}
 
@@ -259,7 +279,30 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
 
   frontmatter = metadata.select { |_, v| !v.nil? && !v.to_s.empty? }.to_yaml
 
-  complete = "#{frontmatter}---\n\n# #{title_pretty}\n\n#{output}"
+  headings = output.match(/^#+ (.*)/)
+
+  heading_diff = if headings
+                   fuzzymatch.getDistance(title_pretty, headings[1])
+                 else
+                   0
+                 end
+
+
+  if heading_diff >= 0.75
+    # The existing heading is similar enough to the page title
+    complete = "#{frontmatter}---\n\n#{fix_headings output}"
+  else
+    # Add cleaned up title as a heading
+    title_prettier = if title.match(/ /)
+                       title_pretty
+                     else
+                       title_pretty
+                       .gsub(/([a-z])([A-Z0-9])/, '\1 \2')
+                       .gsub(/([A-Z])([A-Z])([a-z])/, '\1 \2\3')
+                     end
+
+    complete = "#{frontmatter}---\n\n# #{title_prettier}\n\n#{fix_headings output, 1}"
+  end
 
   ext = '.html.md'
 
