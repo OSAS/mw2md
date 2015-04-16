@@ -47,7 +47,7 @@ CSV.foreach(authors_csv) do |col|
 end
 
 # Discover all redirects
-redirect = {}
+redirect = { wiki_redirects: {}, map: {} }
 
 mw.css('page').select { |page| page.css('redirect') }.each do |page|
   title = page.css('title').text
@@ -58,7 +58,7 @@ mw.css('page').select { |page| page.css('redirect') }.each do |page|
 
   unless redir.strip == ''
     # puts "Redirect! #{title} => #{redir}"
-    redirect[title] = redir
+    redirect[:wiki_redirects][title] = redir
   end
 end
 
@@ -276,11 +276,6 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     dir = File.dirname full_file
   end
 
-  # percent = ((0.0 + current_page) / number_of_pages * 100).round(1)
-
-  # puts "Writing (#{current_page}/#{number_of_pages}) " \
-  # "#{percent}% (MWID: #{id}) #{full_file}..."
-
   # Update progressbar
   progress.increment
 
@@ -305,6 +300,10 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
     end
   end
 
+  # Add document path info to the redirect file, in mappings
+  redirect[:map][title] = full_file.chomp(ext)
+
+  # Add to git (when history is preserved)
   unless comment.match(/^Created page with/) && redirect[title] || !history
     git_author = wiki_author[username.downcase]
     git_name = git_author.nil? ? username.downcase : (git_author[:name] || username.downcase)
@@ -344,7 +343,7 @@ puts "#{errors.count} error#{errors.count != 1 ? 's' : ''} " \
   'found, and saved in ./errors/' if errors.count > 0
 
 # Output redirect mappings
-File.write "#{path}/_redirects.yaml", redirect.to_yaml
+File.write "#{path}/redirects.yaml", redirect.to_yaml
 
 # Clean up repo
 if history
