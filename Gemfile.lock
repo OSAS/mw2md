@@ -1,13 +1,27 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    RubyInline (3.12.4)
+      ZenTest (~> 4.3)
+    ZenTest (4.11.0)
+    activesupport (4.2.0)
+      i18n (~> 0.7)
+      json (~> 1.7, >= 1.7.7)
+      minitest (~> 5.1)
+      thread_safe (~> 0.3, >= 0.3.4)
+      tzinfo (~> 1.1)
     builder (3.2.2)
     coderay (1.1.0)
     crass (1.0.1)
     expression_parser (0.9.0)
+    fuzzy-string-match (0.9.7)
+      RubyInline (>= 3.8.6)
+    i18n (0.7.0)
+    json (1.8.2)
     kramdown (1.6.0)
     method_source (0.8.2)
     mini_portile (0.6.2)
+    minitest (5.6.0)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     nokogumbo (1.2.0)
@@ -23,8 +37,11 @@ GEM
       nokogiri (>= 1.4.4)
       nokogumbo (= 1.2.0)
     slop (3.6.0)
+    thread_safe (0.3.5)
     twitter-text (1.11.0)
       unf (~> 0.1.0)
+    tzinfo (1.2.2)
+      thread_safe (~> 0.1)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.6)
@@ -37,6 +54,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activesupport
+  fuzzy-string-match
   kramdown
   nokogiri
   pandoc-ruby
