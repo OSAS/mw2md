@@ -24,6 +24,7 @@ config = YAML.load_file('config.yml')
 
 # Load settings, fall back to defaults otherwise
 path = config['output'] || '/tmp/mw2md-output'
+path_sub = File.join path, (config['output_subdir'] || '')
 authors_csv = config['authors_csv'] || 'authors.csv'
 dump_xml = config['wiki_xml'] || 'dump.xml'
 history = config['history'].nil? ? true : config['history']
@@ -325,21 +326,21 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   if wikitext.match(/^#REDIRECT/) || wikitext.strip.empty?
     # puts "REDIRECTED! #{title} => #{redirect[title]}"
     begin
-      File.delete "#{path}/#{full_file}"
+      File.delete "#{path_sub}/#{full_file}"
     rescue
-      # puts "Error deleting file: #{path}/#{full_file}"
+      # puts "Error deleting file: #{path_sub}/#{full_file}"
     end
   else
     begin
-      FileUtils.mkdir_p "#{path}/#{dir}"
+      FileUtils.mkdir_p "#{path_sub}/#{dir}"
     rescue
-      puts "Error creating directory! #{path}/#{dir}"
+      puts "Error creating directory! #{path_sub}/#{dir}"
     end
 
     begin
-      File.write "#{path}/#{full_file}", complete
+      File.write "#{path_sub}/#{full_file}", complete
     rescue
-      puts "Error writing file! #{path}/#{full_file} — #{frontmatter.inspect}"
+      puts "Error writing file! #{path_sub}/#{full_file} — #{frontmatter.inspect}"
     end
   end
 
@@ -386,7 +387,7 @@ puts "#{errors.count} error#{errors.count != 1 ? 's' : ''} " \
   'found, and saved in ./errors/' if errors.count > 0
 
 # Output redirect mappings
-File.write "#{path}/redirects.yaml", redirect.to_yaml
+File.write "#{path_sub}/redirects.yaml", redirect.to_yaml
 
 # Clean up repo
 if history
