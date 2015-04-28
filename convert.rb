@@ -389,6 +389,11 @@ puts "#{errors.count} error#{errors.count != 1 ? 's' : ''} " \
 # Output redirect mappings
 File.write "#{path_sub}/redirects.yaml", redirect.to_yaml
 
+# Add redirect mapping file to git
+command_redirects = "git commit #{path_sub}/redirects.yaml" \
+  "&& git commit -a -m 'Added redirects'"
+Process.wait Kernel.spawn(command_redirects, chdir: path)
+
 # Clean up repo
 if history
   puts 'Re-packing repo:'
