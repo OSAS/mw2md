@@ -4,7 +4,7 @@ GEM
     RubyInline (3.12.4)
       ZenTest (~> 4.3)
     ZenTest (4.11.0)
-    activesupport (4.2.0)
+    activesupport (4.2.1)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -12,30 +12,22 @@ GEM
       tzinfo (~> 1.1)
     builder (3.2.2)
     coderay (1.1.0)
-    crass (1.0.1)
     expression_parser (0.9.0)
     fuzzy-string-match (0.9.7)
       RubyInline (>= 3.8.6)
+    htmlentities (4.3.3)
     i18n (0.7.0)
     json (1.8.2)
-    kramdown (1.6.0)
+    kramdown (1.7.0)
     method_source (0.8.2)
-    mini_portile (0.6.2)
-    minitest (5.6.0)
+    minitest (5.6.1)
     nokogiri (1.6.6.2)
-      mini_portile (~> 0.6.0)
-    nokogumbo (1.2.0)
-      nokogiri
     pandoc-ruby (1.0.0)
     pry (0.10.1)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    ruby-progressbar (1.7.1)
-    sanitize (3.1.1)
-      crass (~> 1.0.1)
-      nokogiri (>= 1.4.4)
-      nokogumbo (= 1.2.0)
+    ruby-progressbar (1.7.5)
     slop (3.6.0)
     thread_safe (0.3.5)
     twitter-text (1.11.0)
@@ -44,10 +36,12 @@ GEM
       thread_safe (~> 0.1)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.6)
-    wikicloth (0.8.2)
+    unf_ext (0.0.7.1)
+    wikicloth (0.8.3)
       builder
       expression_parser
+      htmlentities
+      nokogiri
       twitter-text
 
 PLATFORMS
@@ -61,5 +55,4 @@ DEPENDENCIES
   pandoc-ruby
   pry
   ruby-progressbar
-  sanitize
   wikicloth
