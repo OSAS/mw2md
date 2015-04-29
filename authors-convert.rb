@@ -11,17 +11,17 @@ yaml_file = config['authors_yaml'] || 'wiki_authors.yaml'
 authors = {}
 
 CSV.open(csv_file).each do |nick, name, email|
-  nick.strip!
-  name.strip!
-  email.strip!
+  nick.strip! if nick
+  name.strip! if name
+  email.strip! if email
 
-  if name == '' && email == ''
+  if (name == '' || name.nil?) && (email == '' || email.nil?)
     authors[nick] = nil
   else
     authors[nick] ||= {}
 
-    authors[nick]['name'] = name unless name == ''
-    authors[nick]['email'] = email unless email == ''
+    authors[nick]['name'] = name unless (name == '' || name.nil?)
+    authors[nick]['email'] = email unless (email == '' || email.nil?)
   end
 end
 
