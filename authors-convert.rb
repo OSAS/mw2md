@@ -2,6 +2,11 @@
 
 require 'csv'
 require 'yaml'
+require 'digest/md5'
+
+def gravatize email
+  Digest::MD5.hexdigest email.downcase.strip
+end
 
 config = YAML.load_file('config.yml')
 
@@ -22,6 +27,7 @@ CSV.open(csv_file).each do |nick, name, email|
 
     authors[nick]['name'] = name unless (name == '' || name.nil?)
     authors[nick]['email'] = email unless (email == '' || email.nil?)
+    authors[nick]['gravatar'] = gravatize email unless (email == '' || email.nil?)
   end
 end
 
