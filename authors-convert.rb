@@ -31,5 +31,11 @@ CSV.open(csv_file).each do |nick, name, email|
   end
 end
 
+yaml_output = authors.to_yaml
+              .gsub(/^---\n/m, '')
+              .gsub(/^\w/, "\n\\0")
+              .strip
+
+File.write yaml_file, yaml_output
+
 puts "Read from '#{csv_file}' and wrote to '#{yaml_file}'"
-File.write yaml_file, authors.to_yaml.gsub(/^---\n/m, '')
