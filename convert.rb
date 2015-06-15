@@ -351,7 +351,7 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
   unless comment.match(/^Created page with/) && redirect[title] || !history
     git_author = wiki_author[username.downcase]
     git_name = git_author.nil? ? username.downcase : (git_author[:name] || username.downcase)
-    git_email = git_author.nil? ? "#{username.downcase}@wiki.conversion" : git_author[:email]
+    git_email = git_author.nil? || git_author[:email].to_s.empty? ? "#{username.downcase.gsub(/ /, '_')}@wiki.conversion" : git_author[:email]
     git_comment = comment.strip.empty? ? "Updated #{title_pretty}" : comment
     git_comment = "Created #{title_pretty}" if comment.match(/^Created page with/)
 
