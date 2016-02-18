@@ -21,6 +21,7 @@ $VERBOSE = orig_verbosity
 
 # Load configuration
 config = YAML.load_file('config.yml')
+new_urls = YAML.load_file('new_urls.yaml')
 
 # Load settings, fall back to defaults otherwise
 path = config['output'] || '/tmp/mw2md-output'
@@ -307,13 +308,16 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
 
   ext = '.html.md'
 
-  full_file = "#{dir.strip}/#{filename.strip}#{ext}"
+  full_file = new_urls[title] ||
+              "#{dir.strip}/#{filename.strip}#{ext}"
               .downcase
               .squeeze(' ')
               .gsub(/[_\s:]/, '-')
               .gsub(/-+/, '-')
               .gsub(/["';]/, '')
               .squeeze('-')
+
+  # puts "#{full_file}"
 
   config['rewrite_full'].each do |k, v|
     full_file.gsub!(Regexp.new(k, Regexp::IGNORECASE), v)
