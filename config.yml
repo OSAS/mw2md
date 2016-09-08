@@ -1,5 +1,5 @@
 # Settings
-output: '/tmp/mw2md-ovirt'
+output: '/tmp/mw2md'
 authors_csv: 'authors.csv'
 wiki_xml: 'dump.xml'
 history: true
@@ -11,52 +11,41 @@ skip: '^(user|user talk|talk|template|mediawiki):'
 # Assign category (& directory) based on filename
 # (it will stop on the first match, so order matters)
 catmatch:
-  "workshop": event/workshop
-  "event": event
-  "how[ -]?to": howto
-  "api": api
-  "infra": infra
-  "node": node
-  "vdsm": vdsm
-  "guide": documentation
+  #"workshop": event/workshop
+  #"event": event
+  #"how[ -]?to": howto
+  #"api": api
+  #"guide": documentation
 
 # Rewrite filenames
 rewrite_file:
-  "how[ -]?to[ -]?": ""
+  #"how[ -]?to[ -]?": ""
 
 # Rewrite directories
 rewrite_dir:
-  "features": "feature"
-  "home/feature": "feature"
-  "infra.*": "infra"
-  "how-to": "howto"
-  "releases": "release"
+  #"features": "feature"
+  #"home/feature": "feature"
+  #"infra.*": "infra"
+  #"how-to": "howto"
+  #"releases": "release"
 
 # Rewrite directory and filename after everything above is processed
 # (catch-all)
 rewrite_full:
-  ".*/ovirt-([0-9.zx]*)-release-notes": 'release/\1/index'
-  ".*/ovirt-([0-9.zx]*)-(.*)": 'release/\1/\2'
-  "ovirt-.*-to-([^-]*)-upgrade": 'release/\1/upgrade'
-  "^node/node-": "node/"
-  "ovirt-": ""
-  "testcase/testcase": "testing/testcase/"
-  "^vdsm-hooks/": "vdsm/hook/"
-  "^vdsm/vdsm-": "vdsm/"
   "^category/(.*).html.md": '\1/index.html.md'
-  "project-proposal/": "project/proposal/"
-  "/project-proposal-": "/"
-  "^draft-documentation/": "documentation/draft/"
-  "^projects/": "project/"
-  "^how-to/": "howto/"
-  "^(development)-(environment)/": '\1/\2/'
-  "^(building)-(engine)/": '\2/\1/'
+  #"project-proposal/": "project/proposal/"
+  #"/project-proposal-": "/"
+  #"^draft-documentation/": "documentation/draft/"
+  #"^projects/": "project/"
+  #"^how-to/": "howto/"
+  #"^(development)-(environment)/": '\1/\2/'
+  #"^(building)-(engine)/": '\2/\1/'
 
 # Match original wikitext and add metadata to frontmatter
 frontmatter:
-  '\{\{Feature\|[^}]*name=([^\|}]*)[^}]*\}\}': "feature_name"
-  '\{\{Feature\|[^}]*modules=([^\|}]*)[^}]*\}\}': "feature_modules"
-  '\{\{Feature\|[^}]*status=([^\|}]*)[^}]*\}\}': "feature_status"
+  #'\{\{Feature\|[^}]*name=([^\|}]*)[^}]*\}\}': "feature_name"
+  #'\{\{Feature\|[^}]*modules=([^\|}]*)[^}]*\}\}': "feature_modules"
+  #'\{\{Feature\|[^}]*status=([^\|}]*)[^}]*\}\}': "feature_status"
 
 # Rewrite special wiki constructs to be markdown-friendly
 # (output should be HTML that feeds into the Markdown conversion)
@@ -80,8 +69,10 @@ rewrite_markdown:
   # (as often seen in code blocks)
   '^\s+$': ''
   # Fix username (oVirt-specific)
-  '<username>': '&lt;username&gt;'
+  #'<username>': '&lt;username&gt;'
 
+# Keep track of specific warnings,
+# for pages that might need extra attention
 warnings:
   '<references>': 'references'
   '<\/ref>': 'references'
