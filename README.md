@@ -6,6 +6,7 @@ Never fear! `mw2md` is here for you!
 
 It will convert a MediaWiki XML dump to a git repo full of Markdown files.
 
+_Note: mw2md does not alter links contained within documents. You'll need to handle that yourself, either with httpd redirects or with some code in your site builder. (Or you could tinker with the code and submit a patch to enable link rewriting.)_
 
 ## Installation
 
