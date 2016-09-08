@@ -152,19 +152,25 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
 
   category_match = nil
 
-  config['catmatch'].each do |k, v|
-    next if category_match
-    category_match = v if filename.match(Regexp.new k)
+  unless config['catmatch'].nil?
+    config['catmatch'].each do |k, v|
+      next if category_match
+      category_match = v if filename.match(Regexp.new k)
+    end
   end
 
-  config['rewrite_file'].each do |k, v|
-    filename.gsub!(Regexp.new(k), v)
+  unless config['rewrite_file'].nil?
+    config['rewrite_file'].each do |k, v|
+      filename.gsub!(Regexp.new(k), v)
+    end
   end
 
   dir = category_match || category_dirs || dirs || 'uncategorized'
 
-  config['rewrite_dir'].each do |k, v|
-    dir.gsub!(Regexp.new(k), v)
+  unless config['rewrite_dir'].nil?
+    config['rewrite_dir'].each do |k, v|
+      dir.gsub!(Regexp.new(k), v)
+    end
   end
 
   if title.match(/^(home|main page)$/i)
@@ -262,9 +268,11 @@ revision.sort_by { |r| r[:timestamp] }.each do |rev_info|
 
   # Add frontmatter based on matchers from config
   # (matchers apply to wiki source, which has data the conversion lacks)
-  config['frontmatter'].each do |k, v|
-    matches = wikitext.gsub(/<!\-\-[^\-\->]*\-\->/m, '').match(Regexp.new k)
-    metadata[v] = matches.captures.join(', ').squeeze(' ').strip if matches
+  unless config['frontmatter'].nil?
+    config['frontmatter'].each do |k, v|
+      matches = wikitext.gsub(/<!\-\-[^\-\->]*\-\->/m, '').match(Regexp.new k)
+      metadata[v] = matches.captures.join(', ').squeeze(' ').strip if matches
+    end
   end
 
   if conversion_error
